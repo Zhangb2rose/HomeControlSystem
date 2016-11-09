@@ -1,0 +1,309 @@
+{% extends "layout.html" %} {% block content %}
+
+<head>
+    <title>Flask-SocketIO Test</title>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.6/socket.io.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8">
+        namespace = '/test'; // change to an empty string to use the global namespace
+        // the socket.io documentation recommends sending an explicit package upon connection
+        // this is specially important when using the global namespace
+        var tem = 24;
+        var bool = 0;
+        var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+        $(document).ready(function() {
+
+            // event handler for server sent data
+            // the data is displayed in the "Received" section of the page
+            /*           socket.on('my response', function(msg) {
+                           $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+                       }); */
+            socket.on('my data', function(msg) {
+                //    $('#data').append('<br>' + $('<div/>').text('My data :' + msg.data ).html());
+                $('#data').text('Temperature :' + msg.data + " C").html();
+                $('#data1').text('Fahrenheit :' + msg.data1 + " F").html();
+                $('#data2').text('Air Quality :' + msg.data2).html();
+                $('#data3').text('Light Intensity :' + msg.data3).html();
+
+                //$('#data').text('My data :' + msg.data).html();
+                update(Number(msg.data), Number(msg.data1))
+                update2(Number(msg.data2))
+                update3(Number(msg.data3))
+                console.log("get data")
+
+
+                //update(Number(msg.temperature), Number(msg.fahrenheit))
+                //update2(Number(msg.airquality))
+
+            });
+
+
+            // event handler for new connections
+            socket.on('connect', function() {
+                socket.emit('my event', {
+                    data: 'I\'m connected!'
+                });
+            });
+            // handlers for the different forms in the page
+            // these send data to the server in a variety of ways
+            $('form#emit').submit(function(event) {
+                socket.emit('my event', {
+                    data: $('#emit_data').val()
+                });
+                return false;
+            });
+            $('form#broadcast').submit(function(event) {
+                socket.emit('my broadcast event', {
+                    data: $('#broadcast_data').val()
+                });
+                return false;
+            });
+
+        });
+        
+        function myFunction4(id, name) {
+            //alert("This will " + name + "the relay");
+            if (id == "button6") {
+                document.getElementById('button6').className = "btn btn-danger btnown disabled";
+                document.getElementById('button7').className = "btn btn-danger btnown";
+                document.getElementById('button8').className = "btn btn-danger btnown";
+            }
+            if (id == "button7") {
+                document.getElementById('button7').className = "btn btn-danger btnown disabled";
+                document.getElementById('button6').className = "btn btn-danger btnown";
+                document.getElementById('button8').className = "btn btn-danger btnown";
+            }
+            if (id == "button8") {
+                document.getElementById('button8').className = "btn btn-danger btnown disabled";
+                document.getElementById('button7').className = "btn btn-danger btnown";
+                document.getElementById('button6').className = "btn btn-danger btnown";
+            }
+            socket.emit('my relay2', {
+                data: name
+            });
+        }
+
+        function myFunction(id, name) {
+            //alert("This will " + name + "the relay");
+            if (id == "button1") {
+                document.getElementById('button1').className = "btn btn-primary btnown disabled";
+                document.getElementById('button2').className = "btn btn-primary btnown";
+                document.getElementById('button3').className = "btn btn-primary btnown";
+            }
+            if (id == "button2") {
+                document.getElementById('button2').className = "btn btn-primary btnown disabled";
+                document.getElementById('button1').className = "btn btn-primary btnown";
+                document.getElementById('button3').className = "btn btn-primary btnown";
+            }
+            if (id == "button3") {
+                document.getElementById('button3').className = "btn btn-primary btnown disabled";
+                document.getElementById('button2').className = "btn btn-primary btnown";
+                document.getElementById('button1').className = "btn btn-primary btnown";
+            }
+            socket.emit('my relay', {
+                data: name
+            });
+        }
+
+        function myFunction2() {
+            tem++;
+            socket.emit('temperature', {
+                data: tem
+            })
+            $('#data4').text(tem + ' C').html();
+
+        }
+
+        function myFunction3() {
+            tem--;
+            socket.emit('temperature', {
+                data: tem
+            })
+            $('#data4').text(tem + ' C').html();
+
+        }
+        function myFunction5() {
+            bool = 1;
+            socket.emit('switch', {
+                data: bool
+            })
+            
+
+        }
+        function myFunction6() {
+            bool = 0;
+            socket.emit('switch', {
+                data: bool
+            })
+        }
+    </script>
+</head>
+
+<body>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h2 align="center">ECE497 Final Project--Home Control Center</h2></div>
+        <div class="panel-body">
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 align="center">Grove Temperature Sensor</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-md-6">
+                                <div id="data">Temperature :0 C</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="data1">Fahrenheit :0 F</div>
+                            </div>
+                            <div align="center">
+                                <canvas id="canvas" height=100%></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 align="center">Grove Air Quality Sensor</h3></div>
+                        <div class="panel-body">
+                            <div id="data2">Air Quality:0</div>
+                            <div align="center">
+                                <canvas id="MoistureChart" height=100%></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">
+                            <h3 align="center">Grove Light Sensor</h3></div>
+                        <div class="panel-body">
+                            <div id="data3">Light Intensity:0</div>
+                            <div align="center">
+                                <canvas id="LightChart" height=100%></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+            </div>
+
+
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 align="center">Cooling Switch</h3></div>
+                        <div class="panel-body">
+
+                            <div class="row">
+                                <div class="col-md-12" style="margin-left:40px;">
+                                    <button id='button1' type="button" class="btn btn-primary btnown" onclick="myFunction(this.id,'Open')">Turn on</button>
+                                    <button id='button2' type="button" class="btn btn-primary btnown" onclick="myFunction(this.id,'Close')">Turn off</button>
+                                    <button id='button3' type="button" class="btn btn-primary btnown disabled" onclick="myFunction(this.id,'Auto')">Auto</button>
+                                </div>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 align="center">Temperature setting</h3></div>
+                        <div class="panel-body">
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <button id='button4' type="button" class="btn btn-default btnown" onclick="myFunction3()">Tem Down</button>
+                                </div>
+                                <div class="col-md-4">
+                                    <div id="data4" style= "margin-left:12px; margin-top:3px; font-size:24px;">24 C</div>
+                                </div>
+                                <div class="col-md-4">
+                                 <button id='button5' type="button" class="btn btn-default btnown" onclick="myFunction2()">Tem Up</button>
+                                 </div>
+                                </div>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-3">
+                    <div class="panel panel-danger">
+                        <div class="panel-heading">
+                            <h3 align="center">Heating Switch</h3></div>
+                        <div class="panel-body">
+
+                            <div class="row">
+                                <div class="col-md-12" style="margin-left:40px;">
+                                    <button id='button6' type="button" class="btn btn-danger btnown" onclick="myFunction4(this.id,'Open')">Turn on</button>
+                                    <button id='button7' type="button" class="btn btn-danger btnown" onclick="myFunction4(this.id,'Close')">Turn off</button>
+                                    <button id='button8' type="button" class="btn btn-danger btnown disabled" onclick="myFunction4(this.id,'Auto')">Auto</button>
+                                </div>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="col-md-3">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <h3 align="center">Light Switch</h3></div>
+                        <div class="panel-body">
+
+                            <div class="row">
+                                <div class="col-md-12" style="margin-left:75px;">
+                                    <button id='button9' type="button" class="btn btn-success btnown" onclick="myFunction5()">Turn on</button>
+                                    <button id='button10' type="button" class="btn btn-success btnown" onclick="myFunction6()">Turn off</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                </div>
+
+
+
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+
+
+
+
+    <!--<div id="Temperature"></div>
+    <div id="Fahrenheit"></div>
+    <div id="AirQuality"></div>-->
+
+
+</body>
+
+{% endblock %}
